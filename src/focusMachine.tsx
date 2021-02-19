@@ -11,7 +11,7 @@ function FocusMachine(props: any) {
     return () => {
       clearInterval(intervalObject);
     };
-  }, []);
+  }, [intervalObject]);
 
   const createInterval = () => {
     if (!("Notification" in window)) {
@@ -32,7 +32,7 @@ function FocusMachine(props: any) {
         body: "body test\nbody test",
       }
     );
-    clearInterval(intervalObject);
+    // clearInterval(intervalObject);
     var newInterval = setInterval(() => {
       new Notification(`${goal}`);
     }, parseInt(intervalValue) * 1000);
@@ -40,7 +40,6 @@ function FocusMachine(props: any) {
   };
 
   const deleteInterval = () => {
-    clearInterval(intervalObject);
     setIntervalObject(null);
   };
   return (
