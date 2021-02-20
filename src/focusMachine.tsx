@@ -1,43 +1,50 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import mech from "./mech.png";
 import flare from "./flare.png";
 
+const SECONDS = "seconds";
+const MINUTES = "minutes";
+
 function FocusMachine(props: any) {
   const [goal, setGoal] = useState("");
   const [intervalValue, setIntervalValue] = useState("");
+  const [intervalUnit, setIntervalUnit] = useState(SECONDS);
   const [intervalObject, setIntervalObject] = useState(null as any);
 
-  //   // clear interval on unmount
-  //   useEffect(() => {
-  //     return () => {
-  //       clearInterval(intervalObject);
-  //     };
-  //   }, [intervalObject]);
-
-  const createInterval = () => {
+  const createInterval = async () => {
     if (!("Notification" in window)) {
       alert("This browser does not support desktop notifications.");
     } else if (Notification.permission !== "granted") {
-      Notification.requestPermission().then(function (permission) {
-        // If the user accepts, let's create a notification
-        if (permission === "granted") {
-        } else {
-          return;
-        }
-      });
+      const permission = await Notification.requestPermission();
+      // If the user accepts, let's create a notification
+      if (permission === "granted") {
+      } else {
+        return;
+      }
     }
 
+    let intervalLength = parseFloat(intervalValue);
+    if (Number.isNaN(intervalLength)) {
+      alert("Please enter a valid number greater than 0");
+      return;
+    }
+    intervalLength =
+      intervalLength * 1000 * (intervalUnit === MINUTES ? 60 : 1);
+
+    if (intervalLength < 1000) {
+      alert("Please enter an interval longer than 1 second");
+      return;
+    }
     new Notification(
-      `goal set: ${goal}; will ping you every ${intervalValue} seconds`,
-      {
-        body: "body test\nbody test",
-      }
+      `goal set: ${goal}; will ping you every ${parseFloat(
+        intervalValue
+      )} ${intervalUnit}`
     );
 
     var newInterval = setInterval(() => {
       new Notification(`${goal}`);
-    }, parseInt(intervalValue) * 1000);
+    }, intervalLength);
     clearInterval(intervalObject);
     setIntervalObject(newInterval);
   };
@@ -49,20 +56,36 @@ function FocusMachine(props: any) {
   return (
     <MachineContainer>
       <MachineHeader>Focus Machine</MachineHeader>
-      <MachineInput
+      <TopicInput
         placeholder="What do you want to work on?"
         onChange={(e) => {
           setGoal(e.target.value);
         }}
         value={goal}
-      ></MachineInput>
-      <MachineInput
-        placeholder="Remind me every x seconds"
-        onChange={(e) => {
-          setIntervalValue(e.target.value);
-        }}
-        value={intervalValue}
-      ></MachineInput>
+      ></TopicInput>
+      <IntervalInputContainer>
+        <IntervalInput
+          placeholder="Remind me every x seconds"
+          onChange={(e) => {
+            setIntervalValue(e.target.value?.trim());
+          }}
+          value={intervalValue}
+        ></IntervalInput>
+        <select
+          value={intervalUnit}
+          onChange={(e) => {
+            setIntervalUnit(e.target.value);
+          }}
+        >
+          <option value={SECONDS}>
+            {parseInt(intervalValue) == 1 ? "second" : "seconds"}
+          </option>
+          <option value={MINUTES}>
+            {parseInt(intervalValue) == 1 ? "minute" : "minutes"}
+          </option>
+        </select>
+      </IntervalInputContainer>
+
       {intervalObject ? (
         <MachineButton onClick={deleteInterval}>Stop</MachineButton>
       ) : (
@@ -107,10 +130,20 @@ const MachineHeader = styled.h1`
   text-align: center;
 `;
 
-const MachineInput = styled.input`
+const TopicInput = styled.input`
   display: block;
   margin: auto;
   width: 200px;
+`;
+
+const IntervalInputContainer = styled.div`
+  display: block;
+  margin: auto;
+  width: 208px;
+`;
+
+const IntervalInput = styled.input`
+  width: 100px;
 `;
 
 const MachineButton = styled.button`
