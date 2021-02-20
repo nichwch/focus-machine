@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import mech from "./mech.png";
 import flare from "./flare.png";
+
+const SECONDS = "seconds";
+const MINUTES = "minutes";
 
 function FocusMachine(props: any) {
   const [goal, setGoal] = useState("");
@@ -9,36 +12,39 @@ function FocusMachine(props: any) {
   const [intervalUnit, setIntervalUnit] = useState(SECONDS);
   const [intervalObject, setIntervalObject] = useState(null as any);
 
-  //   // clear interval on unmount
-  //   useEffect(() => {
-  //     return () => {
-  //       clearInterval(intervalObject);
-  //     };
-  //   }, [intervalObject]);
-
-  const createInterval = () => {
+  const createInterval = async () => {
     if (!("Notification" in window)) {
       alert("This browser does not support desktop notifications.");
     } else if (Notification.permission !== "granted") {
-      Notification.requestPermission().then(function (permission) {
-        // If the user accepts, let's create a notification
-        if (permission === "granted") {
-        } else {
-          return;
-        }
-      });
+      const permission = await Notification.requestPermission();
+      // If the user accepts, let's create a notification
+      if (permission === "granted") {
+      } else {
+        return;
+      }
     }
 
+    let intervalLength = parseFloat(intervalValue);
+    if (Number.isNaN(intervalLength)) {
+      alert("Please enter a valid number greater than 0");
+      return;
+    }
+    intervalLength =
+      intervalLength * 1000 * (intervalUnit === MINUTES ? 60 : 1);
+
+    if (intervalLength < 1000) {
+      alert("Please enter an interval longer than 1 second");
+      return;
+    }
     new Notification(
-      `goal set: ${goal}; will ping you every ${intervalValue} seconds`,
-      {
-        body: "body test\nbody test",
-      }
+      `goal set: ${goal}; will ping you every ${parseFloat(
+        intervalValue
+      )} ${intervalUnit}`
     );
 
     var newInterval = setInterval(() => {
       new Notification(`${goal}`);
-    }, parseInt(intervalValue) * 1000);
+    }, intervalLength);
     clearInterval(intervalObject);
     setIntervalObject(newInterval);
   };
@@ -141,7 +147,7 @@ const MachineHeader = styled.h1`
   margin: 10px auto 10px auto;
 `;
 
-const MachineInput = styled.input`
+const TopicInput = styled.input`
   display: block;
   margin: auto;
   width: 200px;
@@ -152,6 +158,12 @@ const IntervalInput = styled.input`
   width: 100px;
   margin: 2.5px 5px 2.5px auto;
   border: 1px solid black;
+`;
+
+const IntervalInputContainer = styled.div`
+  display: block;
+  margin: auto;
+  width: 208px;
 `;
 
 const MachineButton = styled.button`
