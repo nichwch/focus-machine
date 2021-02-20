@@ -5,7 +5,8 @@ import flare from "./flare.png";
 
 function FocusMachine(props: any) {
   const [goal, setGoal] = useState("");
-  const [intervalValue, setIntervalValue] = useState("");
+  const [intervalValue, setIntervalValue] = useState("60");
+  const [intervalUnit, setIntervalUnit] = useState(SECONDS);
   const [intervalObject, setIntervalObject] = useState(null as any);
 
   //   // clear interval on unmount
@@ -49,20 +50,42 @@ function FocusMachine(props: any) {
   return (
     <MachineContainer>
       <MachineHeader>Focus Machine</MachineHeader>
-      <MachineInput
-        placeholder="What do you want to work on?"
-        onChange={(e) => {
-          setGoal(e.target.value);
-        }}
-        value={goal}
-      ></MachineInput>
-      <MachineInput
-        placeholder="Remind me every x seconds"
-        onChange={(e) => {
-          setIntervalValue(e.target.value);
-        }}
-        value={intervalValue}
-      ></MachineInput>
+
+      <InputContainer>
+        <Prompt>I want to focus on...</Prompt>
+        <TopicInput
+          placeholder="my goal"
+          onChange={(e) => {
+            setGoal(e.target.value);
+          }}
+          value={goal}
+        ></TopicInput>
+      </InputContainer>
+
+      <InputContainer>
+        <Prompt>Remind me every...</Prompt>
+        <IntervalInput
+          placeholder="reminder interval"
+          onChange={(e) => {
+            setIntervalValue(e.target.value?.trim());
+          }}
+          value={intervalValue}
+        ></IntervalInput>
+        <select
+          value={intervalUnit}
+          onChange={(e) => {
+            setIntervalUnit(e.target.value);
+          }}
+        >
+          <option value={SECONDS}>
+            {parseInt(intervalValue) == 1 ? "second" : "seconds"}
+          </option>
+          <option value={MINUTES}>
+            {parseInt(intervalValue) == 1 ? "minute" : "minutes"}
+          </option>
+        </select>
+      </InputContainer>
+
       {intervalObject ? (
         <MachineButton onClick={deleteInterval}>Stop</MachineButton>
       ) : (
@@ -77,40 +100,58 @@ function FocusMachine(props: any) {
   );
 }
 
-const TargetAcquiredText = styled.h3<{ visible: boolean }>`
+const Prompt = styled.p`
+  margin: 0px;
+`;
+const InputContainer = styled.div`
+  display: block;
+  margin: 7px auto 7px auto;
+  width: 208px;
+`;
+
+const TargetAcquiredText = styled.p<{ visible: boolean }>`
   color: red;
+  font-weight: bold;
   text-align: center;
   margin: 20px 0px 0px 0px;
   opacity: ${(props) => (props.visible ? 1 : 0)};
 `;
 
 const MechImage = styled.img`
-  height: 400px;
-  width: 400px;
+  height: 300px;
+  width: 300px;
   display: block;
   margin: auto;
 `;
 
 const FlareImage = styled.img<{ visible: boolean }>`
-  height: 400px;
-  width: 400px;
+  height: 300px;
+  width: 300px;
   display: block;
   margin: auto;
 
   position: relative;
-  top: -400px;
+  top: -300px;
   opacity: ${(props) => (props.visible ? 1 : 0)};
   transition: opacity 0.1s;
 `;
 
 const MachineHeader = styled.h1`
   text-align: center;
+  margin: 10px auto 10px auto;
 `;
 
 const MachineInput = styled.input`
   display: block;
   margin: auto;
   width: 200px;
+  border: 1px solid black;
+`;
+
+const IntervalInput = styled.input`
+  width: 100px;
+  margin: 2.5px 5px 2.5px auto;
+  border: 1px solid black;
 `;
 
 const MachineButton = styled.button`
@@ -123,14 +164,13 @@ const MachineContainer = styled.div`
   margin: auto;
   padding: 20px;
   width: 400px;
-  height: 400px;
+  height: calc(100vh - 40px);
 
   /* box-shadow: 0px 0px 10px 10px #aaaaaa inset, 5px 10px 10px 10px #aaaaaa; */
 
   @media only screen and (max-width: 400px) {
     margin: 0px;
     width: calc(100% - 40px);
-    height: 100%;
   }
 `;
 export default FocusMachine;
